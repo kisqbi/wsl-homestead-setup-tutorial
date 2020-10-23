@@ -1,93 +1,77 @@
-**UPDATE & UPGRADE**
+## HOMESTEAD ON WSL2
 
-    sudo apt-get update && sudo apt dist-upgrade
-**install nginx**
+project issue: https://github.com/laravel/homestead/issues/1484
 
-    sudo apt install nginx
-
- **install mysql**
-
-    sudo apt install mysql
-    sudo usermod -d /var/lib/mysql/ mysql
-    sudo service mysql start
-    sudo mysql_secure_installation
-
-Say **no** to the first prompt: **VALIDATE PASSWORD PLUGIN**, input and confirm your new mysql password and say **yes** to the rest of inputs.
-
-
-
-    sudo apt-get install php7.4-cli php7.4-fpm php7.4-curl php7.4-gd php7.4-mysql php7.4-mbstring php7.4-json php7.4-xml php7.4-bcmath zip unzip
-
-**nano ~/.bashrc**    
-
-    # Start Nginx, PHP 7.2 and MySQL on boot
-    sudo /etc/init.d/nginx start  
-    sudo /etc/init.d/php7.2-fpm start  
-    sudo /etc/init.d/mysql start
-
-**sudo visudo**
-
-    # Programs that will start automatically  
-    %sudo ALL=NOPASSWD: /etc/init.d/nginx  
-    %sudo ALL=NOPASSWD: /etc/init.d/php7.2-fpm  
-    %sudo ALL=NOPASSWD: /etc/init.d/mysql
-
-**mysql -uroot**
-
-    CREATE DATABASE `laravel` CHARACTER SET utf8 COLLATE utf8_general_ci;
-    CREATE USER 'laravel_user'@'%' IDENTIFIED BY 's3cr3t';
-    USE LARAVEL;
-    GRANT ALL ON `laravel.*` TO 'laravel_user'@'%';
-    FLUSH PRIVILEGES;
-**create project**
-
-    composer create-project --prefer-dist laravel/laravel example
-**Setting up Permissions**
-
-    sudo chown -R <your_username>:www-data /home/<your_username>/examplesudo chmod -R 777 /home/<your_username>/example
-
-**host file** 
-
-    127.0.0.1 example.local
-
-**Setting up the Nginx block**
-
-    sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/example.localsudo nano /etc/nginx/sites-available/example.local
-    sudo ln -s /etc/nginx/sites-available/example.local /etc/nginx/sites-enabled/example.local
-
-**laravel site config**
-```php
-server {
-    listen 80;
-    server_name example.com;
-    root /srv/example.com/public;
-
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
-
-    index index.php;
-
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location = /robots.txt  { access_log off; log_not_found off; }
-
-    error_page 404 /index.php;
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-}
+**Main setup**
 ```
+> cd Code/homestead
+> sudo ./bin/wsl-init 
+> [sudo] password for halo:
+> What is your WSL user name? 
+> halo 
+> What is your WSL user group? 
+> (Same as username if you're unsure) halo 
+> Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [107 kB]
+etc...
+```
+ **Create Sites from Homestead Configuration**
+
+Add a new top level configuration item in your  `Homestead.yaml`  configuration such as:
+```
+wsl_sites:
+    -   map: vcdt.test
+        to: /mnt/c/Users/halo/Code/vcdt/public
+```
+
+```
+$ ./bin/homestead wsl:create-sites
+```
+The sites from  `wsl_sites`  will be created.
+
+**Create Databases from Homestead Configuration**
+
+WSL will read from the normal  `databases`  configuration in  `Homestead.yaml`
+```
+databases:
+    - homestead
+    - vcdt
+    - laminas
+```
+
+```
+$ ./bin/homestead wsl:create-databases
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+mysql: [Warning] Using a password on the command line interface can be insecure.
+WSL Databases have been created!
+```
+The databases from  `databases`  will be created.
+
+
+change php version
+`sudo update-alternatives --config php`
+
+
+
+
+    ip addr show`enter code here` eth0
+    ip addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+    netstat -nr | gerp '^0\.0\.0\.0' | awk '{print $2}'  
+
+https://github.com/microsoft/WSL/issues/4210#issuecomment-648570493
+I give you a new idea: Instead of changing the IP, add a designated IP.
+
+In Windows 10, run CMD or Powershell with administrator privilege, and then execute the following two commands:
+
+:: Add an IP address in Ubuntu, 192.168.50.16, named eth0:1  
+`wsl -d Ubuntu -u root ip addr add 192.168.50.16/24 broadcast 192.168.50.255 dev eth0 label eth0:1`
+
+:: Add an IP address in Win10, 192.168.50.88  
+`netsh interface ip add address "vEthernet (WSL)" 192.168.50.88 255.255.255.0`
+
+In the future, you will use 192.168.50.16 when you access Ubuntu, and 192.168.50.88 when you access Win10.  
+You can save the above two lines of commands as a .bat file, and then put it into the boot area, and let it execute automatically every time.
 
