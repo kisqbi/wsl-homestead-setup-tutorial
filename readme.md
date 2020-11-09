@@ -75,3 +75,17 @@ In Windows 10, run CMD or Powershell with administrator privilege, and then exec
 In the future, you will use 192.168.50.16 when you access Ubuntu, and 192.168.50.88 when you access Win10.  
 You can save the above two lines of commands as a .bat file, and then put it into the boot area, and let it execute automatically every time.
 
+
+**wsl commands**
+
+https://docs.microsoft.com/en-us/windows/wsl/reference
+
+
+ run specific distro :  `wsl -d Ubuntu18`
+ set default distro :  `wsl -s Ubuntu18`
+ list wsl distros :  `wsl --list --verbose`
+ run command on specific distro : 
+
+      wsl -d Ubuntu-20.04 -u root service nginx start
+      wsl -d Ubuntu-20.04 -u root service php7.4-fpm start
+      wsl -d Ubuntu-20.04 -u root service mysql start
